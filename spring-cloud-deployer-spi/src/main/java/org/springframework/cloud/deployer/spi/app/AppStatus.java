@@ -45,6 +45,16 @@ public class AppStatus {
 	private final String deploymentId;
 
 	/**
+	 * App attributes.
+	 */
+	private Map<String, String> attributes;
+
+	/**
+	 * Explicit state of an app.
+	 */
+	private DeploymentState state;
+
+	/**
 	 * Map of {@link AppInstanceStatus} keyed by a unique identifier
 	 * for each app deployment instance.
 	 */
@@ -76,6 +86,9 @@ public class AppStatus {
 	 * @return deployment state for the app
 	 */
 	public DeploymentState getState() {
+		if (state != null) {
+			return state;
+		}
 		Set<DeploymentState> states = new HashSet<>();
 		for (Map.Entry<String, AppInstanceStatus> entry : instances.entrySet()) {
 			states.add(entry.getValue().getState());
@@ -101,6 +114,18 @@ public class AppStatus {
 		// reaching here is unlikely; it would require some
 		// combination of unknown, undeployed, complete
 		return DeploymentState.partial;
+	}
+
+	public void setState(DeploymentState state) {
+		this.state = state;
+	}
+
+	public Map<String, String> getAttributes() {
+		return attributes;
+	}
+
+	public void setAttributes(Map<String, String> attributes) {
+		this.attributes = attributes;
 	}
 
 	public String toString() {
