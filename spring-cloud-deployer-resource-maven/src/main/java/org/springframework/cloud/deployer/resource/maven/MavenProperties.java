@@ -17,6 +17,7 @@
 package org.springframework.cloud.deployer.resource.maven;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -78,6 +79,19 @@ public class MavenProperties {
 	 * Add the ConsoleRepositoryListener to the session for debugging of artifact resolution.
 	 */
 	private boolean enableRepositoryListener = false;
+
+	/**
+	 * Use maven wagon based transport for http based artifacts.
+	 */
+	private boolean useWagon;
+
+	public void setUseWagon(boolean useWagon) {
+		this.useWagon = useWagon;
+	}
+
+	public boolean isUseWagon() {
+		return useWagon;
+	}
 
 	public boolean isEnableRepositoryListener() {
 		return enableRepositoryListener;
@@ -228,6 +242,85 @@ public class MavenProperties {
 		}
 	}
 
+	public static enum WagonHttpMethod {
+		// directly maps to http methods in org.apache.maven.wagon.shared.http.HttpConfiguration
+		all,
+		get,
+		put,
+		head;
+	}
+
+	public static class WagonHttpMethodProperties {
+		// directly maps to settings in org.apache.maven.wagon.shared.http.HttpMethodConfiguration
+		private boolean usePreemptive;
+		private boolean useDefaultHeaders;
+		private Integer connectionTimeout;
+		private Integer readTimeout;
+		private Map<String, String> headers = new HashMap<>();
+		private Map<String, String> params = new HashMap<>();
+
+		public boolean isUsePreemptive() {
+			return usePreemptive;
+		}
+
+		public void setUsePreemptive(boolean usePreemptive) {
+			this.usePreemptive = usePreemptive;
+		}
+
+		public boolean isUseDefaultHeaders() {
+			return useDefaultHeaders;
+		}
+
+		public void setUseDefaultHeaders(boolean useDefaultHeaders) {
+			this.useDefaultHeaders = useDefaultHeaders;
+		}
+
+		public Integer getConnectionTimeout() {
+			return connectionTimeout;
+		}
+
+		public void setConnectionTimeout(Integer connectionTimeout) {
+			this.connectionTimeout = connectionTimeout;
+		}
+
+		public Integer getReadTimeout() {
+			return readTimeout;
+		}
+
+		public void setReadTimeout(Integer readTimeout) {
+			this.readTimeout = readTimeout;
+		}
+
+		public Map<String, String> getHeaders() {
+			return headers;
+		}
+
+		public void setHeaders(Map<String, String> headers) {
+			this.headers = headers;
+		}
+
+		public Map<String, String> getParams() {
+			return params;
+		}
+
+		public void setParams(Map<String, String> params) {
+			this.params = params;
+		}
+	}
+
+	public static class Wagon {
+
+		private Map<WagonHttpMethod, WagonHttpMethodProperties> http = new HashMap<>();
+
+		public Map<WagonHttpMethod, WagonHttpMethodProperties> getHttp() {
+			return http;
+		}
+
+		public void setHttp(Map<WagonHttpMethod, WagonHttpMethodProperties> http) {
+			this.http = http;
+		}
+	}
+
 	public static class RemoteRepository {
 
 		/**
@@ -243,6 +336,8 @@ public class MavenProperties {
 
 		private RepositoryPolicy releasePolicy;
 
+		private Wagon wagon = new Wagon();
+
 		public RemoteRepository() {
 		}
 
@@ -253,6 +348,14 @@ public class MavenProperties {
 		public RemoteRepository(final String url, final Authentication auth) {
 			this.url = url;
 			this.auth = auth;
+		}
+
+		public Wagon getWagon() {
+			return wagon;
+		}
+
+		public void setWagon(Wagon wagon) {
+			this.wagon = wagon;
 		}
 
 		public String getUrl() {

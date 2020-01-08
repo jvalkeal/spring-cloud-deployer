@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 the original author or authors.
+ * Copyright 2015-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,9 @@ import org.eclipse.aether.spi.connector.RepositoryConnectorFactory;
 import org.eclipse.aether.spi.connector.transport.TransporterFactory;
 import org.eclipse.aether.transport.file.FileTransporterFactory;
 import org.eclipse.aether.transport.http.HttpTransporterFactory;
+import org.eclipse.aether.transport.wagon.WagonConfigurator;
+import org.eclipse.aether.transport.wagon.WagonProvider;
+import org.eclipse.aether.transport.wagon.WagonTransporterFactory;
 import org.eclipse.aether.util.artifact.JavaScopes;
 import org.eclipse.aether.util.repository.DefaultProxySelector;
 import org.slf4j.Logger;
@@ -55,6 +58,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Resolves a {@link MavenResource} using <a href="https://www.eclipse.org/aether/>aether</a> to
@@ -247,6 +251,10 @@ class MavenArtifactResolver {
 			proxySelector.add(proxy, this.properties.getProxy().getNonProxyHosts());
 			session.setProxySelector(proxySelector);
 		}
+		// wagon configs
+		for (Entry<String, MavenProperties.RemoteRepository> entry : this.properties.getRemoteRepositories().entrySet()) {
+			session.setConfigProperty("aether.connector.wagon.config." + entry.getKey(), entry.getValue().getWagon());
+		}
 		return session;
 	}
 
@@ -259,7 +267,15 @@ class MavenArtifactResolver {
 		DefaultServiceLocator locator = MavenRepositorySystemUtils.newServiceLocator();
 		locator.addService(RepositoryConnectorFactory.class, BasicRepositoryConnectorFactory.class);
 		locator.addService(TransporterFactory.class, FileTransporterFactory.class);
-		locator.addService(TransporterFactory.class, HttpTransporterFactory.class);
+
+		if (properties.isUseWagon()) {
+			locator.addService(WagonProvider.class, StaticWagonProvider.class);
+			locator.addService(WagonConfigurator.class, StaticWagonConfigurator.class);
+			locator.addService(TransporterFactory.class, WagonTransporterFactory.class);
+		} else {
+			locator.addService(TransporterFactory.class, HttpTransporterFactory.class);
+		}
+
 		locator.setErrorHandler(new DefaultServiceLocator.ErrorHandler() {
 			@Override
 			public void serviceCreationFailed(Class<?> type, Class<?> impl, Throwable exception) {

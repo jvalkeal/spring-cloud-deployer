@@ -22,6 +22,7 @@
 		<java.version>1.8</java.version>
 		<maven.version>3.6.2</maven.version>
 		<maven-resolver.version>1.4.1</maven-resolver.version>
+		<maven-wagon.version>3.3.4</maven-wagon.version>
 	</properties>
 
 	<modules>
@@ -51,6 +52,11 @@
 				<version>2.2.0.BUILD-SNAPSHOT</version>
 				<type>pom</type>
 				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.maven.wagon</groupId>
+				<artifactId>wagon-http</artifactId>
+				<version>${maven-wagon.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
