@@ -17,6 +17,8 @@ package org.springframework.cloud.deployer.spi.app;
 
 import java.util.Map;
 
+import reactor.core.publisher.Mono;
+
 /**
  * Extension of the AppDeployer interface that adds an additional
  * method to return the DeploymentState for a collection of deployment ids.
@@ -31,4 +33,8 @@ public interface MultiStateAppDeployer extends AppDeployer {
 	 * @return a Map of deployment id and DeploymentState
 	 */
 	Map<String, DeploymentState> states(String ... ids);
+
+	default Mono<Map<String, DeploymentState>> statesReactive(String ... ids) {
+		return Mono.defer(() -> Mono.just(states(ids)));
+	}
 }

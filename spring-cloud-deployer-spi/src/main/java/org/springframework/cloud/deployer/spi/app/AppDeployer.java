@@ -16,8 +16,13 @@
 
 package org.springframework.cloud.deployer.spi.app;
 
+import java.util.List;
+
 import org.springframework.cloud.deployer.spi.core.AppDeploymentRequest;
 import org.springframework.cloud.deployer.spi.core.RuntimeEnvironmentInfo;
+
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 /**
  * SPI defining a runtime environment capable of deploying and managing the
@@ -138,6 +143,14 @@ public interface AppDeployer {
 	 * @return the app deployment status
 	 */
 	AppStatus status(String id);
+
+	default Mono<AppStatus> statusReactive(String id) {
+		return Mono.defer(() -> Mono.just(status(id)));
+	}
+
+	default Flux<AppStatus> statusesReactive(String... ids) {
+		return Flux.fromArray(ids).flatMap(id -> statusReactive(id));
+	}
 
 	/**
 	 * Return the environment info for this deployer.
