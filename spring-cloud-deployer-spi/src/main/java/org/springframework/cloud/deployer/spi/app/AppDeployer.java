@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2019 the original author or authors.
+ * Copyright 2016-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
  */
 
 package org.springframework.cloud.deployer.spi.app;
-
-import java.util.List;
 
 import org.springframework.cloud.deployer.spi.core.AppDeploymentRequest;
 import org.springframework.cloud.deployer.spi.core.RuntimeEnvironmentInfo;
@@ -144,10 +142,22 @@ public interface AppDeployer {
 	 */
 	AppStatus status(String id);
 
+	/**
+	 * Return the {@link AppStatus} for an app represented by a deployment id.
+	 *
+	 * @param id the app deployment id, as returned by {@link #deploy}
+	 * @return the app deployment status
+	 */
 	default Mono<AppStatus> statusReactive(String id) {
 		return Mono.defer(() -> Mono.just(status(id)));
 	}
 
+	/**
+	 * Return the {@link AppStatus}s for an app represented by a deployment ids.
+	 *
+	 * @param id the app deployment ids, as returned by {@link #deploy}
+	 * @return the app deployment statuses
+	 */
 	default Flux<AppStatus> statusesReactive(String... ids) {
 		return Flux.fromArray(ids).flatMap(id -> statusReactive(id));
 	}
